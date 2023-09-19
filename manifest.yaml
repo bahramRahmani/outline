@@ -46,7 +46,7 @@ interfaces:
     lan-config:
       443:
         ssl: true
-        internal: 5001
+        internal: 8080
     ui: false
     protocols:
       - tcp
