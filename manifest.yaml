@@ -39,15 +39,15 @@ volumes:
 interfaces:
   main:
     name: API / Web UI
-    description: Serves both the API and the Web UI. Don't visit this URL directly in a browser. Instead, please see the Properties section for a URL to access the Web UI.
-    tor-config:
-      port-mapping:
-        80: "8080"
+    description: bahram  Qbittorrent Web UI.
+#    tor-config:
+#      port-mapping:
+#        8080: "8080"
     lan-config:
-      443:
-        ssl: true
+      8080:
+        ssl: false
         internal: 8080
-    ui: false
+    ui: true
     protocols:
       - tcp
       - http
@@ -97,4 +97,4 @@ migrations:
   to:
     "*":
       type: script
-      args: ["to"]  
+      args: ["to"]
