@@ -66,8 +66,10 @@ RUN \
 
 # add local files
 COPY root/ /
-
+ADD docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 # ports and volumes
 EXPOSE 8080 6881 6881/udp
 
 VOLUME /config
+
+
