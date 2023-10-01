@@ -1,75 +1,71 @@
-# syntax=docker/dockerfile:1
+# Copyright 2018 The Outline Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-FROM ghcr.io/linuxserver/baseimage-alpine:edge
+ARG NODE_IMAGE
 
-# set version label
-ARG BUILD_DATE
-ARG VERSION
-ARG QBITTORRENT_VERSION
-ARG QBT_VERSION
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="thespad"
+# Multi-stage build: use a build image to prevent bloating the shadowbox image with dependencies.
+# Run `npm ci` and build inside the container to package the right dependencies for the image.
+FROM ${NODE_IMAGE} AS build
 
-# environment settings
-ARG UNRAR_VERSION=6.2.10
-ENV HOME="/config" \
-XDG_CONFIG_HOME="/config" \
-XDG_DATA_HOME="/config"
+# make for building third_party/prometheus and perl-utils for shasum.
+RUN apk add --no-cache --upgrade bash make perl-utils
+WORKDIR /
 
-# install runtime packages and qbitorrent-cli
-RUN \
-  echo "**** install build packages ****" && \
-  apk add --no-cache --virtual=build-dependencies \
-    build-base && \
-  echo "**** install packages ****" && \
-  apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-    icu-libs \
-    libstdc++ \
-    openssl \
-    openssl1.1-compat \
-    p7zip \
-    python3 \
-    qt6-qtbase-sqlite && \
-  echo "**** install unrar from source ****" && \
-  mkdir /tmp/unrar && \
-  curl -o \
-    /tmp/unrar.tar.gz -L \
-    "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz" && \
-  tar xf \
-    /tmp/unrar.tar.gz -C \
-    /tmp/unrar --strip-components=1 && \
-  cd /tmp/unrar && \
-  make && \
-  install -v -m755 unrar /usr/bin && \
-  if [ -z ${QBITTORRENT_VERSION+x} ]; then \
-    QBITTORRENT_VERSION=$(curl -sL "http://dl-cdn.alpinelinux.org/alpine/edge/community/x86_64/APKINDEX.tar.gz" | tar -xz -C /tmp \
-    && awk '/^P:qbittorrent-nox$/,/V:/' /tmp/APKINDEX | sed -n 2p | sed 's/^V://'); \
-  fi && \
-  apk add -U --upgrade --no-cache \
-    qbittorrent-nox==${QBITTORRENT_VERSION} && \
-  echo "***** install qbitorrent-cli ****" && \
-  mkdir /qbt && \
-  QBT_VERSION=$(curl -sL "https://api.github.com/repos/fedarovich/qbittorrent-cli/releases" \
-      | awk '/tag_name/{print $4;exit}' FS='[""]'); \
-  curl -o \
-    /tmp/qbt.tar.gz -L \
-    "https://github.com/fedarovich/qbittorrent-cli/releases/download/${QBT_VERSION}/qbt-linux-alpine-x64-${QBT_VERSION:1}.tar.gz" && \
-  tar xf \
-    /tmp/qbt.tar.gz -C \
-    /qbt && \
-  echo "**** cleanup ****" && \
-  apk del --purge \
-    build-dependencies && \
-  rm -rf \
-    /root/.cache \
-    /tmp/*
+# Don't copy node_modules and other things not needed for install.
+COPY package.json package-lock.json ./
+COPY src/shadowbox/package.json src/shadowbox/
+RUN npm ci
 
-# add local files
-COPY root/ /
-ADD docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
-# ports and volumes
-EXPOSE 8080 6881 6881/udp
+# We copy the source code only after npm ci, so that source code changes don't trigger re-installs.
+COPY scripts scripts/
+COPY src src/
+COPY tsconfig.json ./
+COPY third_party third_party
 
-VOLUME /config
+ARG ARCH
 
+RUN ARCH=${ARCH} ROOT_DIR=/ npm run action shadowbox/server/build
 
+# shadowbox image
+FROM ${NODE_IMAGE}
+
+# Save metadata on the software versions we are using.
+LABEL shadowbox.node_version=16.18.0
+
+ARG GITHUB_RELEASE
+LABEL shadowbox.github.release="${GITHUB_RELEASE}"
+
+# We use curl to detect the server's public IP. We need to use the --date option in `date` to
+# safely grab the ip-to-country database
+RUN apk add --no-cache --upgrade coreutils curl
+
+COPY src/shadowbox/scripts scripts/
+COPY src/shadowbox/scripts/update_mmdb.sh /etc/periodic/weekly/update_mmdb
+
+RUN /etc/periodic/weekly/update_mmdb
+
+# Create default state directory.
+RUN mkdir -p /root/shadowbox/persisted-state
+
+# Install shadowbox.
+WORKDIR /opt/outline-server
+
+# The shadowbox build directory has the following structure:
+#   - app/          (bundled node app)
+#   - bin/          (binary dependencies)
+#   - package.json  (shadowbox package.json)
+COPY --from=build /build/shadowbox/ .
+
+COPY src/shadowbox/docker/cmd.sh /
+CMD /cmd.sh
