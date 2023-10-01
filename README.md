@@ -1,1 +1,1 @@
-# qbittorrent-wrapper
+# outline-wrapper
