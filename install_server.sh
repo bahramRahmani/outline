@@ -427,7 +427,7 @@ install_shadowbox() {
   export CONTAINER_NAME="${CONTAINER_NAME:-shadowbox}"
 
   run_step "Verifying that Docker is installed" verify_docker_installed
-  #run_step "Verifying that Docker daemon is running" verify_docker_running
+  run_step "Verifying that Docker daemon is running" verify_docker_running
 
   log_for_sentry "Creating Outline directory"
   export SHADOWBOX_DIR="${SHADOWBOX_DIR:-/opt/outline}"
