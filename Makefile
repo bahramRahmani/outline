@@ -14,7 +14,7 @@ clean:
         rm -f scripts/*.js
 
 install: all
-        start-cli package install ipfs.s9pk
+        start-cli package install $(PKG_ID).s9pk
 
 verify: $(PKG_ID).s9pk
         start-sdk verify s9pk $(PKG_ID).s9pk
