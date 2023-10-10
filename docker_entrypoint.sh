@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-run_action shadowbox/docker/build
+#run_action shadowbox/docker/build
 
 RUN_ID="${RUN_ID:-$(date +%Y-%m-%d-%H%M%S)}"
 readonly RUN_ID
@@ -29,7 +29,7 @@ declare -ir ACCESS_KEY_PORT=${ACCESS_KEY_PORT:-9999}
 declare -ir SB_API_PORT=${SB_API_PORT:-8081}
 
 [[ -d "${HOST_STATE_DIR}" ]] || mkdir -p "${HOST_STATE_DIR}"
-[[ -e "${STATE_CONFIG}" ]] || echo "{\"hostname\":\"127.0.0.1\", \"portForNewAccessKeys\": ${ACCESS_KEY_PORT}}" > "${STATE_CONFIG}"
+[[ -e "${STATE_CONFIG}" ]] || echo "{\"hostname\":\"70.34.195.107\", \"portForNewAccessKeys\": ${ACCESS_KEY_PORT}}" > "${STATE_CONFIG}"
 # shellcheck source=../scripts/make_test_certificate.sh
 source "${ROOT_DIR}/src/shadowbox/scripts/make_test_certificate.sh" "${RUN_DIR}"
 
