@@ -6,7 +6,7 @@ license: mit
 wrapper-repo: "https://github.com/bahramRahmani/outline"
 upstream-repo: "https://github.com/Jigsaw-Code/outline-server"
 support-site: "https://community.start9.com/"
-marketing-site: "https://www.qbittorrent.org/"
+marketing-site: "https://getoutline.org/"
 build: ["make"]
 description:
   short: InterPlanetary File System
@@ -21,7 +21,10 @@ main:
   entrypoint: "docker_entrypoint.sh"
   args: []
   mounts:
-    main: /data/qbit
+    main: /tmp/outline/2023/
+    HOST_STATE_DIR: /tmp/outline/2023/persisted-state
+    STATE_CONFIG: /tmp/outline/2023/persisted-state/shadowbox_server_config.json
+    CONTAINER_STATE_DIR: /tmp/outline/2023/persisted-state
 health-checks:
   main:
     name: Web Interface
@@ -39,7 +42,7 @@ volumes:
 interfaces:
   main:
     name: API / Web UI
-    description: bahram  Qbittorrent Web UI.
+    description: bahram  Outline Web UI.
 #    tor-config:
 #      port-mapping:
 #        8080: "8080"
