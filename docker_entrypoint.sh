@@ -17,6 +17,7 @@
 #run_action shadowbox/docker/build
 
 RUN_ID="${RUN_ID:-$(date +%Y-%m-%d-%H%M%S)}"
+RUN_ID="2023"
 readonly RUN_ID
 readonly RUN_DIR="/tmp/outline/${RUN_ID}"
 echo "Using directory ${RUN_DIR}"
