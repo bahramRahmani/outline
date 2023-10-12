@@ -22,9 +22,9 @@ main:
   args: []
   mounts:
     main: /tmp/outline/2023/
-    HOST_STATE_DIR: /tmp/outline/2023/persisted-state
-    STATE_CONFIG: /tmp/outline/2023/persisted-state/shadowbox_server_config.json
-    CONTAINER_STATE_DIR: /tmp/outline/2023/persisted-state
+    HOST-STATE-DIR: /tmp/outline/2023/persisted-state
+    STATE-CONFIG: /tmp/outline/2023/persisted-state/shadowbox_server_config.json
+    CONTAINER-STATE-DIR: /tmp/outline/2023/persisted-state
 health-checks:
   main:
     name: Web Interface
