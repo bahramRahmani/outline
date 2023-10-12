@@ -1,10 +1,10 @@
-id: qbittorrent-wrapper
-title: "qbittorrent-wrapper"
+id: outline-wrapper
+title: "outline-wrapper"
 version: 1.0.0
 release-notes: "Initial release for EmbassyOS"
 license: mit
-wrapper-repo: "https://github.com/bahramRahmani/qbittorrent-wrapper"
-upstream-repo: "https://github.com/qbittorrent/qBittorrent"
+wrapper-repo: "https://github.com/bahramRahmani/outline"
+upstream-repo: "https://github.com/Jigsaw-Code/outline-server"
 support-site: "https://community.start9.com/"
 marketing-site: "https://www.qbittorrent.org/"
 build: ["make"]
@@ -44,10 +44,13 @@ interfaces:
 #      port-mapping:
 #        8080: "8080"
     lan-config:
-      8080:
+      8081:
         ssl: false
-        internal: 8080
-    ui: true
+        internal: 8081
+      9999:
+        ssl: false
+        internal: 9999
+    ui: false
     protocols:
       - tcp
       - http

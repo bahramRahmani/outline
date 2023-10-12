@@ -8,19 +8,20 @@ TS_FILES := $(shell find . -name \*.ts )
 all: verify
 
 clean:
-        rm -rf docker-images
-        rm -f  $(PKG_ID).s9pk
-        rm -f image.tar
-        rm -f scripts/*.js
+	rm -rf docker-images
+	rm -f $(PKG_ID).s9pk
+	rm -f image.tar
+	rm -f scripts/*.js
 
 install: all
-        start-cli package install $(PKG_ID).s9pk
+	start-cli package install $(PKG_ID).s9pk
 
 verify: $(PKG_ID).s9pk
-        start-sdk verify s9pk $(PKG_ID).s9pk
+	start-sdk verify s9pk $(PKG_ID).s9pk
 
 $(PKG_ID).s9pk: manifest.yaml instructions.md scripts/embassy.js LICENSE docker-images/x86_64.tar
-        start-sdk pack
+	start-sdk pack
+
 docker-images/x86_64.tar: Dockerfile docker_entrypoint.sh check-web.sh
-        mkdir -p docker-images
-        docker buildx  build --tag start9/$(PKG_ID)/main:$(PKG_VERSION) --load  --build-arg ARCH=x86_64 --build-arg PLATFORM=amd64 --platform=linux/amd64 -o type=docker,dest=docker-images/x86_64.tar .
+	mkdir -p docker-images
+	docker buildx build --tag start9/$(PKG_ID)/main:$(PKG_VERSION) --load --build-arg ARCH=x86_64 --build-arg PLATFORM=amd64 --platform=linux/amd64 -o type=docker,dest=docker-images/x86_64.tar .
